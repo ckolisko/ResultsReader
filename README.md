@@ -907,17 +907,3 @@ The library issues warnings in the following cases:
     
     Tried to get normed data without high/low values set
         Warning when requesting normalized data before setting reference values
-
----
-
-## License
-
-[Add your license information here]
-
-## Contributing
-
-[Add contribution guidelines here]
-
-## Contact
-
-[Add contact information here]
