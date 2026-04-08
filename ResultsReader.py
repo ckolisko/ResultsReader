@@ -33,7 +33,7 @@ class ResultsReader:
     
     # Make a results reader. Filename is the name of the file reading the data.
     # Uses break size to divide file data into list of data lists.
-    def __init__(self, filename:str, outputFolderName:str = "OutputResultsReader", breakSize:int = 120, tempIn:float = 37.0, tempOut:float= 21.0, heatCorrect:bool=True, timeUnit:str = "s"):
+    def __init__(self, filename:str, outputFolderName:str = "OutputResultsReader", breakSize:int = 120, tempIn:float = 37.0, tempOut:float= 21.0, heatCorrect:bool=True, timeUnit:str = "s", csv:bool=False):
         
         if self.timeUnitDict.get(timeUnit) is None:
             self.timeUnit= timeUnit
@@ -50,7 +50,11 @@ class ResultsReader:
 
         # Want to start off by reading parsing the plate reader's results, adding copy to folder.
         self.filename = filename
-        rawData:pd.DataFrame = pd.read_table(filename, header=0)
+        rawData:pd.DataFrame 
+        if (csv):
+            rawData = pd.read_csv(filename)
+        else :
+            rawData = pd.read_table(filename, header=0)
         shutil.copy(filename, ("./" + outputFolderName + "/rawData.txt"))
 
         self.logfiles = [logFolder + "/globalLog.txt"]
@@ -79,7 +83,7 @@ class ResultsReader:
         # Get rid of asterisks.
         rawData = rawData.replace(r'\*', '', regex=True)
                 
-        rawData = rawData.astype(int)
+        rawData = rawData.astype(float)
         
         # Remove wells with all 0's for data.
         rawData = self.__removeAllZeroWells(rawData)
@@ -105,13 +109,17 @@ class ResultsReader:
 
         # Break raw data into dataframes, then each dataframe into dataframe for each well.
         temporaryData:list[pd.DataFrame] = []
+        if (len(timeBreakInd) == 0):
+            timeBreakInd.append(len(timeVals - 1))
         for i in range (len(timeBreakInd)):
             # for the first one, go from 0 - ind first.
             if (i == 0):
                 temporaryData.append (rawData[0:timeBreakInd[i]])
             if (timeBreakInd[i] == timeBreakInd[-1]):
                 # For the last time break, go to end of rawData.
-                temporaryData.append (rawData[timeBreakInd[i]:])
+                data = rawData[timeBreakInd[i]:]
+                if (len(data) != 0):
+                    temporaryData.append (rawData[timeBreakInd[i]:])
             else : 
                 # Otherwise, get all data between timeBreakInd[i] and timeBreakInd[i + 1]
                 temporaryData.append(rawData[timeBreakInd[i]:timeBreakInd[i + 1]])
@@ -119,7 +127,7 @@ class ResultsReader:
         # Break each entry into seperate dataframes.
         # Add log entries for each well.
         self.Data:list[list[pd.DataFrame]] = []
-        columnNames = temporaryData[0].columns        
+        columnNames = rawData.columns        
 
         # map columnName to log index
         self.columnNameLogMap = {}
@@ -596,42 +604,42 @@ class ResultsReader:
                 else:
                     plt.plot(curWellDataframes[j]["Time"], curWellDataframes[j][curWellName], color = colors[i % (len(colors))])
 
-        # If two plots, need to set both labels and such.
-        if twoPlots:
-            plt.subplot(2, 1, 1)
-            plt.xlim(left=minStartBound)
-            plt.grid(True)
-            plt.legend()
-            plt.xlabel("Time ( " + str(self.timeUnit) + " )")
-            plt.ylabel('Fluorescence')
-            plt.title("Fluorescence over time")
-
-            plt.subplot(2, 1, 2)            
-            plt.xlim(left=minStartBound)
-            plt.grid(True)
-            plt.legend()
-            plt.xlabel("Time ( " + str(self.timeUnit) + " )")
-            plt.ylabel('Fluorescence')
-            plt.subplots_adjust(hspace=0.5, wspace=0.4)
-            plt.title("Normalized Fluorescence over time")
-
-        # Otherwise, just the one.
-        else :
-            if not normed:
+            # If two plots, need to set both labels and such.
+            if twoPlots:
+                plt.subplot(2, 1, 1)
                 plt.xlim(left=minStartBound)
                 plt.grid(True)
                 plt.legend()
                 plt.xlabel("Time ( " + str(self.timeUnit) + " )")
                 plt.ylabel('Fluorescence')
                 plt.title("Fluorescence over time")
-                
-            else:
+
+                plt.subplot(2, 1, 2)            
                 plt.xlim(left=minStartBound)
                 plt.grid(True)
                 plt.legend()
                 plt.xlabel("Time ( " + str(self.timeUnit) + " )")
                 plt.ylabel('Fluorescence')
+                plt.subplots_adjust(hspace=0.5, wspace=0.4)
                 plt.title("Normalized Fluorescence over time")
+
+            # Otherwise, just the one.
+            else :
+                if not normed:
+                    plt.xlim(left=minStartBound)
+                    plt.grid(True)
+                    plt.legend()
+                    plt.xlabel("Time ( " + str(self.timeUnit) + " )")
+                    plt.ylabel('Fluorescence')
+                    plt.title("Fluorescence over time")
+                    
+                else:
+                    plt.xlim(left=minStartBound)
+                    plt.grid(True)
+                    plt.legend()
+                    plt.xlabel("Time ( " + str(self.timeUnit) + " )")
+                    plt.ylabel('Fluorescence')
+                    plt.title("Normalized Fluorescence over time")
                 
         plt.show()
                 
