@@ -606,6 +606,7 @@ Returns:
 
 ## Global Constants
 
+There are some default global constants defined.
 ### Heat Correction Values
 
     heatCorrectionValues = {
@@ -720,17 +721,19 @@ ResultsReader maintains detailed logs of all operations:
     ...
 
 Each log entry includes:
-    - Step number
-    - Unix timestamp
-    - Operation description
+- Step number
+- Unix timestamp
+- Operation description
 
 ---
 
 ## Input File Format
 
-The input file should be tab-delimited with:
-    - First column: Time values
-    - Subsequent columns: Well data (column headers are well names)
+The input file can be either:
+- (Default) A tab delimited table
+ - A csv file
+
+In either case, the first column should be "Time" , and subsequent columns should be the well names.
 
 Example:
 
@@ -741,169 +744,3 @@ Example:
     ...
 
 ---
-
-## Class Attributes Reference
-
-### Instance Attributes
-
-    filename : str
-        Path to the original input file
-    
-    runnerName : str
-        Name of the output folder
-    
-    Data : list[list[pd.DataFrame]]
-        Main data structure containing all well data organized by well and time break
-    
-    headers : pd.Index
-        Column headers from the original data file
-    
-    highVals : dict
-        Dictionary mapping well names to their high reference values (-1 if not set)
-    
-    lowVals : dict
-        Dictionary mapping well names to their low reference values (-1 if not set)
-    
-    tempIn : float
-        Plate reader temperature in Celsius
-    
-    tempOut : float
-        Ambient temperature in Celsius
-    
-    timeUnit : str
-        Time unit string (seconds, minutes, hours, or days)
-    
-    logfiles : list[str]
-        List of paths to log files
-    
-    columnNameLogMap : dict
-        Mapping from well names to their log file indices
-    
-    logStep : int
-        Current global log step counter
-    
-    logSubStep : int
-        Current sub-step counter for well-specific logs
-
----
-
-## Private Methods Reference
-
-The following methods are used internally and are not intended for direct use:
-
-    __initialLogs(runnerName, breakSize, timeUnit, heatCorrect, tempOut, tempIn)
-        Initializes log files with header information
-    
-    __createTimeBreaks(timeVals, breakVal) [static]
-        Identifies indices where time gaps exceed the break threshold
-    
-    __removeAllZeroWells(rawData)
-        Removes wells containing only zero values
-    
-    __calcTempAtMeasurement(t0, t1, k, temp0, tempAmb)
-        Calculates temperature at a given measurement time
-    
-    __findTempVals(timeVals, timeBreakInd, tempIn, tempOut)
-        Generates temperature values for each time point
-    
-    __TimeBreakWell(time, well) [static]
-        Adds a time break to a single well's data
-    
-    __findDataFrameHelp(well, time, functionArg)
-        Helper to find and apply function to dataframe containing a specific time
-    
-    __findDataFrameByIndex(well, index, functionArg)
-        Applies function to dataframe at specific index
-    
-    __voidDataFrameFunc(dataframe)
-        Deletes contents of a dataframe
-    
-    __voidTimeBreak(indOrTime, columnName, useRealTime)
-        Internal method to void a specific time break
-    
-    __findDataFramesTime(well, startBound, endBound) [static]
-        Finds all dataframes within a time range
-    
-    __findDataFramesIndiciesByTime(well, startBound, endBound) [static]
-        Finds indices of dataframes within a time range
-    
-    __create_log_user_action_index(columnName, startIndex, endIndex, operationMessage)
-        Logs user actions with index ranges
-    
-    __create_log_user_action_time(columnName, startTime, endTime, operationMessage)
-        Logs user actions with time ranges
-    
-    __getPercentileValue(dataframe, percentile)
-        Gets time and value at specified percentile
-    
-    __getStartEndTime(well, startBound, endBound) [static]
-        Resolves None bounds to actual time values
-    
-    __getStartEndIndex(well, startBound, endBound) [static]
-        Resolves None bounds to actual index values
-    
-    __trimStart(data, startTime) [static]
-        Removes data before start time
-    
-    __trimEnd(data, endTime) [static]
-        Removes data after end time
-    
-    __getListOfWellsByNames(columnName)
-        Converts column name specification to list of well data
-    
-    __getPercentileValuesByTimeInterval(startBound, endBound, columnName, percentile)
-        Gets percentile values for wells within time interval
-    
-    __voidDataByTimeInterval(startBound, endBound, columnName)
-        Voids data within time interval
-    
-    __getPercentileValuesByBreakInterval(startBound, endBound, columnName, percentile)
-        Gets percentile values for wells within break interval
-    
-    __voidDataByIndex(startBound, endBound, columnName)
-        Voids data within index interval
-    
-    __normData(lowVal, highVal, frame, fluConcInverse) [static]
-        Normalizes data using high and low reference values
-    
-    __wellToJax(well) [static]
-        Converts list of series to single JAX array
-    
-    __wellToJaxList(well) [static]
-        Converts list of series to list of JAX arrays
-
----
-
-## Error Handling
-
-The library raises exceptions in the following cases:
-
-    Invalid timeUnit provided
-        Raised when timeUnit is not one of "s", "m", "h", or "d"
-    
-    Start bound greater than end bound
-        Raised when specifying invalid time or index ranges
-    
-    No data found in range
-        Raised when specified range contains no data
-    
-    Start bound equals end bound
-        Raised when slice would contain no data
-    
-    High value not set for settingWell
-        Raised when trying to copy high value from well that hasn't been set
-    
-    Invalid well name
-        Raised when requesting data for non-existent well
-
----
-
-## Warnings
-
-The library issues warnings in the following cases:
-
-    High or low value calculated before dataframe deletion
-        Warning when deleting data that was used for normalization reference
-    
-    Tried to get normed data without high/low values set
-        Warning when requesting normalized data before setting reference values
