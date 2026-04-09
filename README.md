@@ -70,13 +70,7 @@ ResultsReader is designed to handle fluorescence data from plate readers, provid
 
 ---
 
-## Class Reference
-
-### ResultsReader Class
-
-The main class for handling plate reader data processing and analysis.
-
----
+## ResultsReader Class
 
 ### Constructor
 
