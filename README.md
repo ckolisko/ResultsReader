@@ -16,8 +16,6 @@ A Python library for processing and analyzing fluorescence plate reader data wit
     - [Visualization Methods](#visualization-methods)
     - [Utility Methods](#utility-methods)
 - [Global Constants](#global-constants)
-- [Usage Examples](#usage-examples)
-- [Logging](#logging)
 
 ---
 
@@ -39,23 +37,6 @@ ResultsReader is designed to handle fluorescence data from plate readers, provid
 ### Dependencies
 
     pip install pandas numpy matplotlib jax jaxlib
-
-### Required Libraries
-
-    from typing import Optional
-    import pandas as pd
-    from enum import Enum
-    import numpy as np
-    import math
-    import os
-    from pathlib import Path
-    import time
-    import datetime
-    import shutil
-    import matplotlib.pyplot as plt
-    import jax.numpy as jnp
-    import copy
-    import warnings
 
 ---
 
@@ -154,6 +135,7 @@ Notes:
 Retrieves the complete data frames for a specified well.
 
 Parameters:
+
     well : str (required)
         Well name (e.g., "A1", "K8")
     
@@ -180,6 +162,7 @@ Example:
 Retrieves the time values for a specified well.
 
 Parameters:
+
     well : str (required)
         Well name
 
@@ -196,6 +179,7 @@ Example:
 Retrieves time values as JAX arrays for numerical computation.
 
 Parameters:
+
     well : str (required)
         Well name
 
@@ -212,6 +196,7 @@ Example:
 Retrieves only the fluorescence data values for a specified well.
 
 Parameters:
+
     well : str (required)
         Well name
     
@@ -234,6 +219,7 @@ Example:
 Retrieves fluorescence data as a single concatenated JAX array.
 
 Parameters:
+
     well : str (required)
         Well name
     
@@ -258,6 +244,7 @@ Example:
 Manually adds a time break at a specified time point.
 
 Parameters:
+
     time : int (required)
         Time value at which to create the break
     
@@ -281,6 +268,7 @@ Example:
 Removes data within a specified time range.
 
 Parameters:
+
     startBound : int | None (default: None)
         Start time of range to void; None = beginning of data
     
@@ -307,6 +295,7 @@ Example:
 Removes data within a specified range of time break indices.
 
 Parameters:
+    
     startBound : int | None (default: None)
         Start index of breaks to void; None = first break
     
@@ -541,90 +530,16 @@ Example:
 
 ---
 
-#### appendLog(string, log)
-
-Appends a message to a log file.
-
-Parameters:
-    string : str (required)
-        Message to log
-    
-    log : int (default: 0)
-        Log file index; 0 = global log, other values = well-specific logs
-
-Returns:
-    None
-
-Example:
-    RR.appendLog("Custom processing step completed", 0)
-
----
-
-#### __str__()
-
-Returns a string representation of the ResultsReader instance.
-
-Returns:
-    str - Summary including filename, headers, temperatures, and time intervals
-
-Example:
-    print(RR)
-
----
-
-#### _getZeroIndex(timeVals) [static]
-
-Finds the index where trailing zeros begin in a time series.
-
-Parameters:
-    timeVals : pd.Series (required)
-        Series of time values
-
-Returns:
-    int - Index of first trailing zero, or -1 if none found
-
----
-
-#### heatCorrectHelper(rawData, ambTemp, inTemp) [static]
-
-Applies heat correction to fluorescence data.
-
-Parameters:
-    rawData : pd.DataFrame (required)
-        DataFrame with Time, Temps, and well columns
-    
-    ambTemp : float (required)
-        Ambient temperature (°C)
-    
-    inTemp : float (required)
-        Plate reader temperature (°C)
-
-Returns:
-    None (modifies DataFrame in place)
-
----
-
 ## Global Constants
 
-There are some default global constants defined.
-### Heat Correction Values
+There are some default global constants defined that are best guesses based on experimental data,
+and specific to the materials being used.
 
-    heatCorrectionValues = {
-        "TYE665": {
-            "Cyt5": {
-                "AmplitudeOvershoot": 0.35,
-                "InvTau": 0.09
-            }
-        }
-    }
+kVal = 0.09
+    Inverse time constant for temperature equilibration
 
-### Default Parameters
-
-    kVal = 0.09
-        Inverse time constant for temperature equilibration
-    
-    AmplitudeOvershoot = 0.35
-        Fractional fluorescence decrease from heated to room temperature
+AmplitudeOvershoot = 0.35
+    Fractional fluorescence decrease from heated to room temperature
 
 ---
 
