@@ -1,10 +1,11 @@
 # ResultsReader
 
-A Python library for processing and analyzing fluorescence plate reader data with automatic heat correction, time series segmentation, and data normalization capabilities.
+A Python data processing library made for the cytation 5, but able to process any data in a similar format (See Input File Format). Can be used for autimatically creating time breaks, heat correction of fluorescence values, data normalization, and data visualization (pyplots).
 
 ## Table of Contents
 
 - [Overview](#overview)
+- [Input File Format](#input-file-format)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [ResultsReader](#resultsreader-class)
@@ -15,7 +16,9 @@ A Python library for processing and analyzing fluorescence plate reader data wit
   - [Visualization Methods](#visualization-methods)
   - [Utility Methods](#utility-methods)
 - [Global Constants](#global-constants)
-
+- [Usage Examples](#usage-examples)
+- [Logging](#logging)
+- 
 ---
 
 ## Overview
