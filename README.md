@@ -100,10 +100,15 @@ Parameters:
     timeUnit : str (default: "s")
         Time unit of the data: "s" (seconds), "m" (minutes), "h" (hours), or "d" (days)
 
+    csv : bool (default: False)
+        Whether using a csv or table
+
 Returns:
+
     ResultsReader instance
 
 Example:
+
     RR = ResultsReader(
         filename="./experiment_data.txt",
         outputFolderName="Experiment_2024",
@@ -115,6 +120,7 @@ Example:
     )
 
 Notes:
+
     - Creates an output folder containing logs and processed data
     - Automatically removes wells with all-zero data
     - Removes trailing zeros from time series
@@ -140,9 +146,11 @@ Parameters:
         If True, inverts the normalization (for inverse fluorescence-concentration relationships)
 
 Returns:
+
     list[pd.DataFrame] - List of DataFrames, one per time break
 
 Example:
+
     # Get raw data
     raw_data = RR.getWellFrame("K8", normedDataBool=False)
 
@@ -161,9 +169,11 @@ Parameters:
         Well name
 
 Returns:
+
     list[pd.Series] - List of time Series, one per time break
 
 Example:
+
     times = RR.getWellTimes("K8")
 
 ---
@@ -178,9 +188,11 @@ Parameters:
         Well name
 
 Returns:
+
     list[jnp.ndarray] - List of JAX arrays containing time values
 
 Example:
+
     jax_times = RR.getWellTimesAsJaxList("K8")
 
 ---
@@ -201,9 +213,11 @@ Parameters:
         If True, inverts the normalization
 
 Returns:
+
     list[pd.Series] - List of data Series, one per time break
 
 Example:
+
     fluorescence = RR.getWellData("K8", normedData=False)
 
 ---
@@ -224,9 +238,11 @@ Parameters:
         If True, inverts the normalization
 
 Returns:
+
     jnp.ndarray - Concatenated JAX array of all fluorescence values
 
 Example:
+
     jax_data = RR.getWellDataAsJax("K8", normedData=True)
 
 ---
@@ -246,9 +262,11 @@ Parameters:
         Well name to apply the break to; if empty, applies to all wells
 
 Returns:
+
     None
 
 Example:
+
     # Add time break at t=500 for well K8
     RR.addTimeBreak(500, "K8")
 
@@ -273,9 +291,11 @@ Parameters:
         Well(s) to apply to; None = all wells
 
 Returns:
+
     None
 
 Example:
+
     # Remove data between t=360 and t=480 for specific wells
     RR.voidTimeSpansByTimeInterval(startBound=360, endBound=480, columnName=["K8", "K9"])
 
@@ -300,9 +320,11 @@ Parameters:
         Well(s) to apply to; None = all wells
 
 Returns:
+
     None
 
 Example:
+
     # Remove breaks 1 and 2 for specific wells
     RR.voidTimeSpansByIndex(startBound=1, endBound=3, columnName=["K9", "K10"])
 
@@ -318,9 +340,11 @@ Parameters:
         Name of the well to remove
 
 Returns:
+
     None
 
 Example:
+
     RR.removeWell("K9")
 
 ---
@@ -346,9 +370,11 @@ Parameters:
         Percentile value (0-100) to use as high reference
 
 Returns:
+
     None
 
 Example:
+
     # Set high value using 95th percentile of data after t=1000
     RR.setHighValuesByTimeInterval(startBound=1000, percentile=95, columnName="K8")
 
@@ -373,9 +399,11 @@ Parameters:
         Percentile value (0-100) to use as low reference
 
 Returns:
+
     None
 
 Example:
+
     # Set low value using 5th percentile of first 500 time units
     RR.setLowValuesByTimeInterval(endBound=500, percentile=5)
 
@@ -400,9 +428,11 @@ Parameters:
         Percentile value (0-100) to use as high reference
 
 Returns:
+
     None
 
 Example:
+
     # Set high value from breaks 1-2 using 100th percentile
     RR.setHighValuesByBreakInterval(startBound=1, endBound=2, percentile=100)
 
@@ -427,9 +457,11 @@ Parameters:
         Percentile value (0-100) to use as low reference
 
 Returns:
+
     None
 
 Example:
+
     # Set low value from all breaks using 0th percentile (minimum)
     RR.setLowValuesByBreakInterval(percentile=0)
 
@@ -448,9 +480,11 @@ Parameters:
         Target well(s); None = all wells
 
 Returns:
+
     None
 
 Example:
+
     # Use K8's high value for K9 and K10
     RR.setHighUsingDifferentWell("K8", columnName=["K9", "K10"])
 
@@ -474,14 +508,17 @@ Parameters:
         Well(s) to plot; None = all wells
 
 Returns:
+
     None
 
 Notes:
+
     - Automatically creates two subplots if some wells have high/low values set and others don't
     - Normalized wells appear in the "Normalized Fluorescence" subplot
     - Non-normalized wells appear in the "Fluorescence" subplot
 
 Example:
+
     # Plot specific wells over a time range
     RR.showDataSeriesByTime(startBound=20000, endBound=40000, columnName=["K8", "K9"])
 
@@ -509,6 +546,7 @@ Returns:
     None
 
 Example:
+
     # Plot first 3 time breaks
     RR.showDataSeriesByIndex(startBound=0, endBound=3)
 
@@ -526,9 +564,11 @@ Parameters:
         Output filename; None defaults to "modifiedData.csv"
 
 Returns:
+
     None
 
 Example:
+
     RR.saveData("processed_data.csv")
 
 ---
