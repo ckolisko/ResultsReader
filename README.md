@@ -85,6 +85,7 @@ The main class for handling plate reader data processing and analysis.
 Creates a new ResultsReader instance and processes the input data file.
 
 Parameters:
+
     filename : str (required)
         Path to the tab-delimited plate reader data file
     
@@ -319,6 +320,7 @@ Example:
 Completely removes a well from the dataset.
 
 Parameters:
+
     columnName : str (required)
         Name of the well to remove
 
@@ -337,6 +339,7 @@ Example:
 Sets the high reference value for normalization based on a percentile within a time range.
 
 Parameters:
+
     startBound : int | None (default: None)
         Start time of search range; None = beginning
     
@@ -363,6 +366,7 @@ Example:
 Sets the low reference value for normalization based on a percentile within a time range.
 
 Parameters:
+
     startBound : int | None (default: None)
         Start time of search range; None = beginning
     
@@ -389,6 +393,7 @@ Example:
 Sets the high reference value based on a percentile within a range of time break indices.
 
 Parameters:
+
     startBound : int | None (default: None)
         Start break index; None = first break
     
@@ -415,6 +420,7 @@ Example:
 Sets the low reference value based on a percentile within a range of time break indices.
 
 Parameters:
+
     startBound : int | None (default: None)
         Start break index; None = first break
     
@@ -441,6 +447,7 @@ Example:
 Copies the high reference value from one well to other wells.
 
 Parameters:
+
     settingWell : str (required)
         Source well with established high value
     
@@ -463,6 +470,7 @@ Example:
 Displays a plot of fluorescence data over a specified time range.
 
 Parameters:
+
     startBound : int | None (default: None)
         Start time for plot; None = beginning
     
@@ -494,6 +502,7 @@ Example:
 Displays a plot of fluorescence data for specified time break indices.
 
 Parameters:
+
     startBound : int | None (default: None)
         Start break index; None = first break
     
@@ -519,6 +528,7 @@ Example:
 Exports the processed data to a CSV file.
 
 Parameters:
+
     filename : str | None (default: None)
         Output filename; None defaults to "modifiedData.csv"
 
