@@ -18,7 +18,6 @@ A Python data processing library made for the cytation 5, but able to process an
 - [Global Constants](#global-constants)
 - [Usage Examples](#usage-examples)
 - [Logging](#logging)
-- 
 ---
 
 ## Overview
@@ -39,6 +38,24 @@ ResultsReader is designed to handle fluorescence data from plate readers, provid
 ### Dependencies
 
     pip install pandas numpy matplotlib jax jaxlib
+
+---
+
+## Input File Format
+
+The input file can be either:
+- (Default) A tab delimited table
+ - A csv file
+
+In either case, the first column should be "Time" , and subsequent columns should be the well names.
+
+Example:
+
+    Time    A1      A2      B1      B2
+    0       1000    1050    980     1020
+    10      1010    1060    990     1030
+    20      1020    1070    1000    1040
+    ...
 
 ---
 
@@ -685,23 +702,5 @@ Each log entry includes:
 - Step number
 - Unix timestamp
 - Operation description
-
----
-
-## Input File Format
-
-The input file can be either:
-- (Default) A tab delimited table
- - A csv file
-
-In either case, the first column should be "Time" , and subsequent columns should be the well names.
-
-Example:
-
-    Time    A1      A2      B1      B2
-    0       1000    1050    980     1020
-    10      1010    1060    990     1030
-    20      1020    1070    1000    1040
-    ...
 
 ---
