@@ -5,8 +5,8 @@ A Python data processing library made for the cytation 5, but able to process an
 ## Table of Contents
 
 - [Overview](#overview)
-- [Input File Format](#input-file-format)
 - [Installation](#installation)
+- [Input File Format](#input-file-format)
 - [Quick Start](#quick-start)
 - [ResultsReader](#resultsreader-class)
   - [Constructor](#constructor)
