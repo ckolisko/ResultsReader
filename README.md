@@ -1,10 +1,9 @@
 # ResultsReader
 
-A Python data processing library made for the cytation 5, but able to process any data in a similar format (See Input File Format). Can be used for autimatically creating time breaks, heat correction of fluorescence values, data normalization, and data visualization (pyplots).
+A Python data processing library made for the cytation 5, but able to process any data in a similar format (See Input File Format). Can be used for automatically creating time breaks, heat correction of fluorescence values, data normalization, and data visualization (pyplots). After processing, can save data to a csv, or can get individual well data as a list of jax arrays.
 
 ## Table of Contents
 
-- [Overview](#overview)
 - [Installation](#installation)
 - [Input File Format](#input-file-format)
 - [Quick Start](#quick-start)
@@ -18,19 +17,6 @@ A Python data processing library made for the cytation 5, but able to process an
 - [Global Constants](#global-constants)
 - [Usage Examples](#usage-examples)
 - [Logging](#logging)
----
-
-## Overview
-
-ResultsReader is designed to handle fluorescence data from plate readers, providing:
-
-- Automatic time break detection: Segments data based on gaps in time readings
-- Heat correction: Compensates for temperature-dependent fluorescence changes
-- Data normalization: Converts raw fluorescence to fractional values using high/low reference points
-- Flexible data selection: Query data by time intervals or break indices
-- Visualization: Built-in plotting with matplotlib
-- Comprehensive logging: Tracks all operations performed on the data
-
 ---
 
 ## Installation
@@ -152,7 +138,7 @@ Notes:
 
 #### getWellFrame(well, normedDataBool, fluConcInverse)
 
-Retrieves the complete data frames for a specified well.
+Retrieves a list of dataframes for a well.
 
 Parameters:
 
