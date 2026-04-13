@@ -1,37 +1,22 @@
 # ResultsReader
 
-A Python library for processing and analyzing fluorescence plate reader data with automatic heat correction, time series segmentation, and data normalization capabilities.
+A Python data processing library made for the cytation 5, but able to process any data in a similar format (See Input File Format). Can be used for automatically creating time breaks, heat correction of fluorescence values, data normalization, and data visualization (pyplots). After processing, can save data to a csv, or can get individual well data as a list of jax arrays.
 
 ## Table of Contents
 
-- [Overview](#overview)
 - [Installation](#installation)
+- [Input File Format](#input-file-format)
 - [Quick Start](#quick-start)
-- [Class Reference](#class-reference)
-  - [ResultsReader](#resultsreader-class)
-    - [Constructor](#constructor)
-    - [Data Access Methods](#data-access-methods)
-    - [Data Manipulation Methods](#data-manipulation-methods)
-    - [Normalization Methods](#normalization-methods)
-    - [Visualization Methods](#visualization-methods)
-    - [Utility Methods](#utility-methods)
+- [ResultsReader](#resultsreader-class)
+  - [Constructor](#constructor)
+  - [Data Access Methods](#data-access-methods)
+  - [Data Manipulation Methods](#data-manipulation-methods)
+  - [Normalization Methods](#normalization-methods)
+  - [Visualization Methods](#visualization-methods)
+  - [Utility Methods](#utility-methods)
 - [Global Constants](#global-constants)
 - [Usage Examples](#usage-examples)
 - [Logging](#logging)
-
----
-
-## Overview
-
-ResultsReader is designed to handle fluorescence data from plate readers, providing:
-
-- Automatic time break detection: Segments data based on gaps in time readings
-- Heat correction: Compensates for temperature-dependent fluorescence changes
-- Data normalization: Converts raw fluorescence to fractional values using high/low reference points
-- Flexible data selection: Query data by time intervals or break indices
-- Visualization: Built-in plotting with matplotlib
-- Comprehensive logging: Tracks all operations performed on the data
-
 ---
 
 ## Installation
@@ -40,22 +25,23 @@ ResultsReader is designed to handle fluorescence data from plate readers, provid
 
     pip install pandas numpy matplotlib jax jaxlib
 
-### Required Libraries
+---
 
-    from typing import Optional
-    import pandas as pd
-    from enum import Enum
-    import numpy as np
-    import math
-    import os
-    from pathlib import Path
-    import time
-    import datetime
-    import shutil
-    import matplotlib.pyplot as plt
-    import jax.numpy as jnp
-    import copy
-    import warnings
+## Input File Format
+
+The input file can be either:
+- (Default) A tab delimited table
+ - A csv file
+
+In either case, the first column should be "Time" , and subsequent columns should be the well names.
+
+Example:
+
+    Time    A1      A2      B1      B2
+    0       1000    1050    980     1020
+    10      1010    1060    990     1030
+    20      1020    1070    1000    1040
+    ...
 
 ---
 
@@ -89,13 +75,7 @@ ResultsReader is designed to handle fluorescence data from plate readers, provid
 
 ---
 
-## Class Reference
-
-### ResultsReader Class
-
-The main class for handling plate reader data processing and analysis.
-
----
+## ResultsReader Class
 
 ### Constructor
 
@@ -104,6 +84,7 @@ The main class for handling plate reader data processing and analysis.
 Creates a new ResultsReader instance and processes the input data file.
 
 Parameters:
+
     filename : str (required)
         Path to the tab-delimited plate reader data file
     
@@ -125,10 +106,15 @@ Parameters:
     timeUnit : str (default: "s")
         Time unit of the data: "s" (seconds), "m" (minutes), "h" (hours), or "d" (days)
 
+    csv : bool (default: False)
+        Whether using a csv or table
+
 Returns:
+
     ResultsReader instance
 
 Example:
+
     RR = ResultsReader(
         filename="./experiment_data.txt",
         outputFolderName="Experiment_2024",
@@ -140,6 +126,7 @@ Example:
     )
 
 Notes:
+
     - Creates an output folder containing logs and processed data
     - Automatically removes wells with all-zero data
     - Removes trailing zeros from time series
@@ -151,9 +138,10 @@ Notes:
 
 #### getWellFrame(well, normedDataBool, fluConcInverse)
 
-Retrieves the complete data frames for a specified well.
+Retrieves a list of dataframes for a well.
 
 Parameters:
+
     well : str (required)
         Well name (e.g., "A1", "K8")
     
@@ -164,9 +152,11 @@ Parameters:
         If True, inverts the normalization (for inverse fluorescence-concentration relationships)
 
 Returns:
+
     list[pd.DataFrame] - List of DataFrames, one per time break
 
 Example:
+
     # Get raw data
     raw_data = RR.getWellFrame("K8", normedDataBool=False)
 
@@ -180,13 +170,16 @@ Example:
 Retrieves the time values for a specified well.
 
 Parameters:
+
     well : str (required)
         Well name
 
 Returns:
+
     list[pd.Series] - List of time Series, one per time break
 
 Example:
+
     times = RR.getWellTimes("K8")
 
 ---
@@ -196,13 +189,16 @@ Example:
 Retrieves time values as JAX arrays for numerical computation.
 
 Parameters:
+
     well : str (required)
         Well name
 
 Returns:
+
     list[jnp.ndarray] - List of JAX arrays containing time values
 
 Example:
+
     jax_times = RR.getWellTimesAsJaxList("K8")
 
 ---
@@ -212,6 +208,7 @@ Example:
 Retrieves only the fluorescence data values for a specified well.
 
 Parameters:
+
     well : str (required)
         Well name
     
@@ -222,9 +219,11 @@ Parameters:
         If True, inverts the normalization
 
 Returns:
+
     list[pd.Series] - List of data Series, one per time break
 
 Example:
+
     fluorescence = RR.getWellData("K8", normedData=False)
 
 ---
@@ -234,6 +233,7 @@ Example:
 Retrieves fluorescence data as a single concatenated JAX array.
 
 Parameters:
+
     well : str (required)
         Well name
     
@@ -244,9 +244,11 @@ Parameters:
         If True, inverts the normalization
 
 Returns:
+
     jnp.ndarray - Concatenated JAX array of all fluorescence values
 
 Example:
+
     jax_data = RR.getWellDataAsJax("K8", normedData=True)
 
 ---
@@ -258,6 +260,7 @@ Example:
 Manually adds a time break at a specified time point.
 
 Parameters:
+
     time : int (required)
         Time value at which to create the break
     
@@ -265,9 +268,11 @@ Parameters:
         Well name to apply the break to; if empty, applies to all wells
 
 Returns:
+
     None
 
 Example:
+
     # Add time break at t=500 for well K8
     RR.addTimeBreak(500, "K8")
 
@@ -281,6 +286,7 @@ Example:
 Removes data within a specified time range.
 
 Parameters:
+
     startBound : int | None (default: None)
         Start time of range to void; None = beginning of data
     
@@ -291,9 +297,11 @@ Parameters:
         Well(s) to apply to; None = all wells
 
 Returns:
+
     None
 
 Example:
+
     # Remove data between t=360 and t=480 for specific wells
     RR.voidTimeSpansByTimeInterval(startBound=360, endBound=480, columnName=["K8", "K9"])
 
@@ -307,6 +315,7 @@ Example:
 Removes data within a specified range of time break indices.
 
 Parameters:
+    
     startBound : int | None (default: None)
         Start index of breaks to void; None = first break
     
@@ -317,9 +326,11 @@ Parameters:
         Well(s) to apply to; None = all wells
 
 Returns:
+
     None
 
 Example:
+
     # Remove breaks 1 and 2 for specific wells
     RR.voidTimeSpansByIndex(startBound=1, endBound=3, columnName=["K9", "K10"])
 
@@ -330,13 +341,16 @@ Example:
 Completely removes a well from the dataset.
 
 Parameters:
+
     columnName : str (required)
         Name of the well to remove
 
 Returns:
+
     None
 
 Example:
+
     RR.removeWell("K9")
 
 ---
@@ -348,6 +362,7 @@ Example:
 Sets the high reference value for normalization based on a percentile within a time range.
 
 Parameters:
+
     startBound : int | None (default: None)
         Start time of search range; None = beginning
     
@@ -361,9 +376,11 @@ Parameters:
         Percentile value (0-100) to use as high reference
 
 Returns:
+
     None
 
 Example:
+
     # Set high value using 95th percentile of data after t=1000
     RR.setHighValuesByTimeInterval(startBound=1000, percentile=95, columnName="K8")
 
@@ -374,6 +391,7 @@ Example:
 Sets the low reference value for normalization based on a percentile within a time range.
 
 Parameters:
+
     startBound : int | None (default: None)
         Start time of search range; None = beginning
     
@@ -387,9 +405,11 @@ Parameters:
         Percentile value (0-100) to use as low reference
 
 Returns:
+
     None
 
 Example:
+
     # Set low value using 5th percentile of first 500 time units
     RR.setLowValuesByTimeInterval(endBound=500, percentile=5)
 
@@ -400,6 +420,7 @@ Example:
 Sets the high reference value based on a percentile within a range of time break indices.
 
 Parameters:
+
     startBound : int | None (default: None)
         Start break index; None = first break
     
@@ -413,9 +434,11 @@ Parameters:
         Percentile value (0-100) to use as high reference
 
 Returns:
+
     None
 
 Example:
+
     # Set high value from breaks 1-2 using 100th percentile
     RR.setHighValuesByBreakInterval(startBound=1, endBound=2, percentile=100)
 
@@ -426,6 +449,7 @@ Example:
 Sets the low reference value based on a percentile within a range of time break indices.
 
 Parameters:
+
     startBound : int | None (default: None)
         Start break index; None = first break
     
@@ -439,9 +463,11 @@ Parameters:
         Percentile value (0-100) to use as low reference
 
 Returns:
+
     None
 
 Example:
+
     # Set low value from all breaks using 0th percentile (minimum)
     RR.setLowValuesByBreakInterval(percentile=0)
 
@@ -452,6 +478,7 @@ Example:
 Copies the high reference value from one well to other wells.
 
 Parameters:
+
     settingWell : str (required)
         Source well with established high value
     
@@ -459,9 +486,11 @@ Parameters:
         Target well(s); None = all wells
 
 Returns:
+
     None
 
 Example:
+
     # Use K8's high value for K9 and K10
     RR.setHighUsingDifferentWell("K8", columnName=["K9", "K10"])
 
@@ -474,6 +503,7 @@ Example:
 Displays a plot of fluorescence data over a specified time range.
 
 Parameters:
+
     startBound : int | None (default: None)
         Start time for plot; None = beginning
     
@@ -484,14 +514,17 @@ Parameters:
         Well(s) to plot; None = all wells
 
 Returns:
+
     None
 
 Notes:
+
     - Automatically creates two subplots if some wells have high/low values set and others don't
     - Normalized wells appear in the "Normalized Fluorescence" subplot
     - Non-normalized wells appear in the "Fluorescence" subplot
 
 Example:
+
     # Plot specific wells over a time range
     RR.showDataSeriesByTime(startBound=20000, endBound=40000, columnName=["K8", "K9"])
 
@@ -505,6 +538,7 @@ Example:
 Displays a plot of fluorescence data for specified time break indices.
 
 Parameters:
+
     startBound : int | None (default: None)
         Start break index; None = first break
     
@@ -518,6 +552,7 @@ Returns:
     None
 
 Example:
+
     # Plot first 3 time breaks
     RR.showDataSeriesByIndex(startBound=0, endBound=3)
 
@@ -530,101 +565,30 @@ Example:
 Exports the processed data to a CSV file.
 
 Parameters:
+
     filename : str | None (default: None)
         Output filename; None defaults to "modifiedData.csv"
 
 Returns:
+
     None
 
 Example:
+
     RR.saveData("processed_data.csv")
-
----
-
-#### appendLog(string, log)
-
-Appends a message to a log file.
-
-Parameters:
-    string : str (required)
-        Message to log
-    
-    log : int (default: 0)
-        Log file index; 0 = global log, other values = well-specific logs
-
-Returns:
-    None
-
-Example:
-    RR.appendLog("Custom processing step completed", 0)
-
----
-
-#### __str__()
-
-Returns a string representation of the ResultsReader instance.
-
-Returns:
-    str - Summary including filename, headers, temperatures, and time intervals
-
-Example:
-    print(RR)
-
----
-
-#### _getZeroIndex(timeVals) [static]
-
-Finds the index where trailing zeros begin in a time series.
-
-Parameters:
-    timeVals : pd.Series (required)
-        Series of time values
-
-Returns:
-    int - Index of first trailing zero, or -1 if none found
-
----
-
-#### heatCorrectHelper(rawData, ambTemp, inTemp) [static]
-
-Applies heat correction to fluorescence data.
-
-Parameters:
-    rawData : pd.DataFrame (required)
-        DataFrame with Time, Temps, and well columns
-    
-    ambTemp : float (required)
-        Ambient temperature (°C)
-    
-    inTemp : float (required)
-        Plate reader temperature (°C)
-
-Returns:
-    None (modifies DataFrame in place)
 
 ---
 
 ## Global Constants
 
-There are some default global constants defined.
-### Heat Correction Values
+There are some default global constants defined that are best guesses based on experimental data,
+and specific to the materials being used.
 
-    heatCorrectionValues = {
-        "TYE665": {
-            "Cyt5": {
-                "AmplitudeOvershoot": 0.35,
-                "InvTau": 0.09
-            }
-        }
-    }
+kVal = 0.09
+    Inverse time constant for temperature equilibration
 
-### Default Parameters
-
-    kVal = 0.09
-        Inverse time constant for temperature equilibration
-    
-    AmplitudeOvershoot = 0.35
-        Fractional fluorescence decrease from heated to room temperature
+AmplitudeOvershoot = 0.35
+    Fractional fluorescence decrease from heated to room temperature
 
 ---
 
@@ -724,23 +688,5 @@ Each log entry includes:
 - Step number
 - Unix timestamp
 - Operation description
-
----
-
-## Input File Format
-
-The input file can be either:
-- (Default) A tab delimited table
- - A csv file
-
-In either case, the first column should be "Time" , and subsequent columns should be the well names.
-
-Example:
-
-    Time    A1      A2      B1      B2
-    0       1000    1050    980     1020
-    10      1010    1060    990     1030
-    20      1020    1070    1000    1040
-    ...
 
 ---
