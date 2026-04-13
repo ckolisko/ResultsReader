@@ -594,73 +594,7 @@ AmplitudeOvershoot = 0.35
 
 ## Usage Examples
 
-### Basic Workflow
-
-    from results_reader import ResultsReader
-
-    # 1. Initialize with your data
-    RR = ResultsReader(
-        filename="./experiment.txt",
-        outputFolderName="Analysis_Output",
-        breakSize=120,
-        tempIn=37.0,
-        tempOut=21.0,
-        heatCorrect=True,
-        timeUnit="s"
-    )
-
-    # 2. Inspect the data structure
-    print(RR)
-
-    # 3. Visualize raw data
-    RR.showDataSeriesByTime()
-
-    # 4. Remove unwanted data
-    RR.voidTimeSpansByTimeInterval(endBound=100)  # Remove first 100 seconds
-
-    # 5. Set normalization references
-    RR.setLowValuesByTimeInterval(startBound=100, endBound=500, percentile=5)
-    RR.setHighValuesByTimeInterval(startBound=5000, percentile=95)
-
-    # 6. Visualize normalized data
-    RR.showDataSeriesByTime()
-
-    # 7. Extract data for further analysis
-    normalized_data = RR.getWellDataAsJax("K8", normedData=True)
-    time_data = RR.getWellTimesAsJaxList("K8")
-
-    # 8. Save results
-    RR.saveData("final_data.csv")
-
-### Working with Multiple Wells
-
-    # Set values for specific wells
-    RR.setLowValuesByTimeInterval(
-        startBound=0, 
-        endBound=500, 
-        percentile=5, 
-        columnName=["A1", "A2", "A3"]
-    )
-
-    # Copy high value from control well to experimental wells
-    RR.setHighValuesByTimeInterval(startBound=5000, percentile=95, columnName="Control")
-    RR.setHighUsingDifferentWell("Control", columnName=["Sample1", "Sample2"])
-
-    # Plot comparison
-    RR.showDataSeriesByTime(columnName=["Control", "Sample1", "Sample2"])
-
-### Handling Time Breaks
-
-    # Add manual time break
-    RR.addTimeBreak(1000, "K8")
-
-    # Remove specific time break intervals
-    RR.voidTimeSpansByIndex(startBound=1, endBound=2, columnName="K8")
-
-    # View data by break index
-    RR.showDataSeriesByIndex(startBound=0, endBound=2)
-
----
+Please see "runnerScript.py" for an example usage of the results reader.
 
 ## Logging
 
