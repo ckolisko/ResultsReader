@@ -2,11 +2,8 @@
 from typing import Optional
 
 import pandas as pd
-from enum import Enum
-import numpy as np
 import math
 import os
-from pathlib import Path
 import time
 import datetime
 import shutil
@@ -16,14 +13,6 @@ import copy
 import warnings
 
 
-heatCorrectionValues = {
-    "TYE665":{
-        "Cyt5":{ # Determined from 500 nM of TYE665 fluorophore on CYT5 machine (06/21/23)
-            "AmplitudeOvershoot": 0.35,
-            "InvTau": 0.09
-        }
-    }
-}
 kVal = 0.09
 AmplitudeOvershoot = 0.35
 
