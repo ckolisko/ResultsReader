@@ -132,7 +132,7 @@ class ResultsReader:
     def __str__(self):
         headers = self.headers
 
-        outputStr = f"Results from {self.filename}\n{"#" * 40}\n" \
+        outputStr = f"Results from {self.filename}\n{'#' * 40}\n" \
         f"Output file: {self.runnerName}\n" \
         f"{len(headers)} Data Headers: {headers}\n" \
         f"Outside Temperature: {self.tempOut}°C\n" \
@@ -295,30 +295,35 @@ class ResultsReader:
                         return
 
     
-    # This method adds an arbitrary time break given a time value. Given time is included in next time break if lands on a specified time. 
-    def addTimeBreak(self, time:int, columnName = ""):
-        # Go well by well
-        dataLen:int = len(self.Data)
-        for i in range (dataLen):
-            if columnName == "" or self.Data[i][0].columns[1] == columnName: 
-                self.__TimeBreakWell(time, self.Data[i])
-                if columnName != "":
-                    self.appendLog("Added time break at " + str(time), self.columnNameLogMap[columnName])
-        if columnName == "":
+    # This method adds an arbitrary time break given a time value. Given time is included in right time break if lands on a specified time. 
+    def addTimeBreak(self, time:int, columnName: Optional[str | list[str]] = None):
+        listOfWells = self.__getListOfWellsByNames(columnName)
+        for i in range(len(listOfWells)):
+            curColumnName = listOfWells[i][0].columns[1]
+            
+            # Check each column.
+            dataLen:int = len(self.Data)
+            for i in range (dataLen):
+                if self.Data[i][0].columns[1] == curColumnName: 
+                    self.__TimeBreakWell(time, self.Data[i])
+                    if columnName is not None:
+                        self.appendLog("Added time break at " + str(time), self.columnNameLogMap[curColumnName])
+        if columnName is not None:
             self.appendLog("Added time break at " + str(time), 0)
             
             
-        # Helper to find the time frame in a well and apply function to that time frame.
+    # Helper to find the time frame in a well and apply function to that time frame.
+    # If a time lies between two breaks, round to the higher break.
     def __findDataFrameHelp(self, well:list[pd.DataFrame], time:int, functionArg):
-        timeVal2:int
+        timeVal1:int
         numBreaks = len(well) 
         for i in range(numBreaks): # For each time break
-            if i == numBreaks - 1: # If at last frame, do last val + 1
-                timeVal2 = well[i].iloc[len(well[i]) - 1 , 0] + 1
-            else : # Else, first val of next break
-                timeVal2 = well[i+1].iloc[0,0] 
+            if i == 0: # If at first frame, do first val - 1
+                timeVal1 = well[i].iloc[0, 0] - 1
+            else : # Else, last val of prior break.
+                timeVal1 = well[i-1].iloc[len(well[i-1]) - 1 , 0] 
             timeVals:pd.Series = well[i].iloc[:,0]
-            if (time >= timeVals.iloc[0] and time < timeVal2 ):
+            if (time > timeVal1 and time <= timeVals.iloc[-1]):
                 # If this is the time frame that has the time, do the function.
                 ret = functionArg(well[i])
                 if ret is not None:
@@ -450,12 +455,12 @@ class ResultsReader:
     def __getListOfWellsByNames(self, columnName):
         listOfWells = []
         if isinstance(columnName, str): # List of one well.
-            listOfWells.append(self.getWellFrame(columnName))
+            listOfWells.append(self.getWellFrame(columnName, False))
         elif isinstance(columnName, list): # List of some wells
             if not all(isinstance(wellName, str) for wellName in columnName):
                 raise Exception("Non string provided to list of well names.")
             for name in columnName:
-                listOfWells.append(self.getWellFrame(name))
+                listOfWells.append(self.getWellFrame(name, False))
         else: # List of all wells
             listOfWells = self.Data
             
@@ -500,9 +505,9 @@ class ResultsReader:
             curWellName = listOfWells[well][0].columns[1]
             curWellDataframesIndicies:list[int] = self.__findDataFramesIndiciesByTime(listOfWells[well], newStartBound, newEndBound)
             
-            # If no dataframes satisfy, don't do the operation
+            # If no dataframes satisfy, don't do the operation for this well.
             if len(curWellDataframesIndicies) == 0:
-                raise Exception("No data found that fits in time range " + str(newStartBound) + " - " + str(newEndBound))
+                continue
 
             # Trim data off past start and before end time spans.  
             if len(curWellDataframesIndicies) == 1: # special case, cutting out the middle of a single time span
@@ -514,6 +519,8 @@ class ResultsReader:
                 
             else :
                 
+                # This just replaces end wells of the void with their partially abbreiviated versions.
+                # Needs to modify underlying datastructure which is why this indexing is awful.
                 listOfWells[well][curWellDataframesIndicies[0]] = listOfWells[well][curWellDataframesIndicies[0]][listOfWells[well][curWellDataframesIndicies[0]]["Time"] < newStartBound]
                 listOfWells[well][curWellDataframesIndicies[-1]] = listOfWells[well][curWellDataframesIndicies[-1]][listOfWells[well][curWellDataframesIndicies[-1]]["Time"] >= newEndBound]
             
@@ -561,8 +568,8 @@ class ResultsReader:
                 minStartBound = newStartBound
                 
             curWellName = listOfWells[i][0].columns[1]
-            curWellDataframes:list[pd.DataFrame] = self.__findDataFramesTime(listOfWells[i], newStartBound, newEndBound)
-            
+            curWellDataframesReal:list[pd.DataFrame] = self.__findDataFramesTime(listOfWells[i], newStartBound, newEndBound)
+            curWellDataframes =copy.deepcopy(curWellDataframesReal)
             # If no dataframes satisfy, don't do the operation
             if len(curWellDataframes) == 0:
                 raise Exception("No data found that fits in time range " + str(newStartBound) + " - " + str(newEndBound))
@@ -572,6 +579,7 @@ class ResultsReader:
             
             # Determine plot type.
             normed = True
+            set = False
             if self.lowVals[curWellDataframes[0].columns[1]] == -1 or self.highVals[curWellDataframes[0].columns[1]] == -1:
                 normed = False
             
@@ -581,10 +589,11 @@ class ResultsReader:
                     plt.subplot(2, 1, 1)
                 else:
                     curWellDataframes = self.__normData(self.lowVals[curWellName], self.highVals[curWellName], curWellDataframes, False)
+                    set = True
                     plt.subplot(2, 1, 2)
                     
             # If not two plots, still check for norm.
-            elif normed:
+            elif normed and not set:
                 curWellDataframes = self.__normData(self.lowVals[curWellName], self.highVals[curWellName], curWellDataframes, False)
 
             for j in range (len(curWellDataframes)):
@@ -593,42 +602,42 @@ class ResultsReader:
                 else:
                     plt.plot(curWellDataframes[j]["Time"], curWellDataframes[j][curWellName], color = colors[i % (len(colors))])
 
-            # If two plots, need to set both labels and such.
-            if twoPlots:
-                plt.subplot(2, 1, 1)
+        # After all data is ploted, add labels.
+        if twoPlots:
+            plt.subplot(2, 1, 1)
+            plt.xlim(left=minStartBound)
+            plt.grid(True)
+            plt.legend()
+            plt.xlabel("Time ( " + str(self.timeUnit) + " )")
+            plt.ylabel('Fluorescence')
+            plt.title("Fluorescence over time")
+
+            plt.subplot(2, 1, 2)            
+            plt.xlim(left=minStartBound)
+            plt.grid(True)
+            plt.legend()
+            plt.xlabel("Time ( " + str(self.timeUnit) + " )")
+            plt.ylabel('Fluorescence')
+            plt.subplots_adjust(hspace=0.5, wspace=0.4)
+            plt.title("Normalized Fluorescence over time")
+
+        # Otherwise, just the one.
+        else :
+            if not normed:
                 plt.xlim(left=minStartBound)
                 plt.grid(True)
                 plt.legend()
                 plt.xlabel("Time ( " + str(self.timeUnit) + " )")
                 plt.ylabel('Fluorescence')
                 plt.title("Fluorescence over time")
-
-                plt.subplot(2, 1, 2)            
+                
+            else:
                 plt.xlim(left=minStartBound)
                 plt.grid(True)
                 plt.legend()
                 plt.xlabel("Time ( " + str(self.timeUnit) + " )")
                 plt.ylabel('Fluorescence')
-                plt.subplots_adjust(hspace=0.5, wspace=0.4)
                 plt.title("Normalized Fluorescence over time")
-
-            # Otherwise, just the one.
-            else :
-                if not normed:
-                    plt.xlim(left=minStartBound)
-                    plt.grid(True)
-                    plt.legend()
-                    plt.xlabel("Time ( " + str(self.timeUnit) + " )")
-                    plt.ylabel('Fluorescence')
-                    plt.title("Fluorescence over time")
-                    
-                else:
-                    plt.xlim(left=minStartBound)
-                    plt.grid(True)
-                    plt.legend()
-                    plt.xlabel("Time ( " + str(self.timeUnit) + " )")
-                    plt.ylabel('Fluorescence')
-                    plt.title("Normalized Fluorescence over time")
                 
         plt.show()
                 
@@ -797,7 +806,7 @@ class ResultsReader:
         valsList = self.__getPercentileValuesByBreakInterval(startBound, endBound, columnName, percentile)
         for well in valsList:
             self.highVals[well[0]] = well[2]
-            self.__create_log_user_action_index(well[0], well[3], well[4], ("Found low value " + str(well[2]) + " at time " + str(well[1]) + ", percentile " + str(percentile) + "% ."))
+            self.__create_log_user_action_index(well[0], well[3], well[4], ("Found high value " + str(well[2]) + " at time " + str(well[1]) + ", percentile " + str(percentile) + "% ."))
 
     def setLowValuesByBreakInterval(self, startBound: Optional[int] = None, endBound: Optional[int] = None, columnName: Optional[str | list[str]] = None, percentile: float = 50):
         valsList = self.__getPercentileValuesByBreakInterval(startBound, endBound, columnName, percentile)
@@ -843,13 +852,12 @@ class ResultsReader:
     # Get the well dataframes based on index or string name.
     # When normed data is true, norms data for which high and low vals are set.
     # Otherwise, just returns the normal plate reader concentation values.
-    def getWellFrame (self, well:str, normedDataBool = True, fluConcInverse = False) -> list[pd.DataFrame]:
+    def getWellFrame (self, well:str, normedDataBool:bool, fluConcInverse = False) -> list[pd.DataFrame]:
         
         targetWellIndex:int|None = None
         for i in range(len(self.Data)):
-            for j in self.Data[i]:
-                if ((j.columns)[1] == well):
-                    targetWellIndex = i
+            if self.Data[i][0].columns[1] == well:
+                targetWellIndex = i
                     
         if targetWellIndex is None:
             raise Exception("Did not enter valid well name")
@@ -857,13 +865,11 @@ class ResultsReader:
         
         rawFrame = self.Data[targetWellIndex]
         if normedDataBool and (self.lowVals[well] != -1) and (self.highVals[well] != -1):
-            # Return a normalized copy while preserving internally stored raw plate-reader values.
             return self.__normData(self.lowVals[well], self.highVals[well], rawFrame, fluConcInverse)
-        if normedDataBool:
-            warnings.warn("Tried to get normed data without having high and low values set.", UserWarning)
+        #if normedDataBool:
+            #warnings.warn("Tried to get normed data without having high and low values set.", UserWarning)
 
-        # Return deep copies to prevent caller-side mutation of internal state.
-        return [i.copy(deep=True) for i in rawFrame]
+        return [i.copy(deep=False) for i in rawFrame]
     
     # Get the full list of times associated with a particular well.
     def getWellTimes (self, well:int|str) -> list[pd.Series]:
@@ -914,10 +920,10 @@ class ResultsReader:
 
     
     # Adding signal helper method, converts fluorescence to fractional datapoints (concentrations if linear relationship assumed). 
+    # Don't want to modify the actual data.
     @staticmethod
     def __normData (lowVal:float, highVal:float, frame:list[pd.DataFrame], fluConcInverse:bool) -> list[pd.DataFrame]:
-        newFrame = [i.copy(deep=True) for i in frame]
-        
+        newFrame = copy.deepcopy(frame)
         wellName = frame[0].columns[1]
         valDif = highVal - lowVal
         for i in range(len(frame)):
@@ -937,7 +943,6 @@ if __name__ == "__main__":
 
     
     # Tmperature, in degrees celsius.
-    
     plateReaderTemp = 37
     roomtemp = 20
     timeUnit = "m" # "s", "m", "h"
