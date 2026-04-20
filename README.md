@@ -594,7 +594,7 @@ AmplitudeOvershoot = 0.35
 
 ## Usage Examples
 
-Please see "runnerScript.py" for an example usage of the results reader.
+Please see "runnerScript.ipynb" for an example usage of the results reader.
 
 ## Logging
 
