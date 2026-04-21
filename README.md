@@ -19,11 +19,9 @@ A Python data processing library made for the cytation 5, but able to process an
 - [Logging](#logging)
 ---
 
-## Installation
+## Dependencies
 
-### Dependencies
-
-    pip install pandas numpy matplotlib jax jaxlib
+    pip install jax==0.8.1 matplotlib==3.10.8 pandas==3.0.2 numpy==2.4.4
 
 ---
 
