@@ -937,7 +937,7 @@ class ResultsReader:
 ##########################################################
 #---------------------RUNNER SCRIPT----------------------# 
 ##########################################################
-
+"""
 if __name__ == "__main__":
     filename = "./test.txt"
 
@@ -984,4 +984,4 @@ if __name__ == "__main__":
 #    RR.showDataSeriesByIndex()
 
     RR.saveData("modifiedData.csv")
-    
+"""
